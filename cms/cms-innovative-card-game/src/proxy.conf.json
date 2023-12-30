@@ -1,0 +1,7 @@
+{
+    "/api/User": {
+        "target": "http://localhost:7019",
+        "secure": false,
+        "logLevel": "debug"
+    }
+}

@@ -1,0 +1,5 @@
+{
+    "AzureWebJobsStorage": "DefaultEndpointsProtocol=https;AccountName=innovationgamesa;AccountKey=inK6WcqAS8gWxKhsYUqpDoYsa/2VsB+nVo9/Hhg9zvnRelnAAaY3FWXU8l9dRE0MESsBCz0JYVed+AStPGs7Yg==;EndpointSuffix=core.windows.net",
+    "QueueName": "carddeckqueue", //queue name
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet"
+}

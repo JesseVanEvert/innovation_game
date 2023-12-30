@@ -1,0 +1,23 @@
+<app-navigation></app-navigation>
+<div class="container">
+  <h1>Voeg organisatie toe</h1>
+
+  <form>
+    <div class="mb-3">
+      <label>Organisatie naam</label>
+      <input
+        type="text"
+        class="form-control"
+        [(ngModel)]="organizationName"
+        name="organizationName"
+      />
+    </div>
+
+    <input
+      type="submit"
+      value="Voeg toe"
+      class="btn btn-primary"
+      (click)="createOrganization()"
+    />
+  </form>
+</div>

@@ -1,0 +1,28 @@
+<form class="w-25" (ngSubmit)="onSubmit()">
+  <!-- Email input -->
+  <div class="form-outline mb-4">
+    <input
+      type="email"
+      id="email"
+      class="form-control"
+      name="email"
+      [(ngModel)]="email"
+    />
+    <label class="form-label" for="form2Example1">Email address</label>
+  </div>
+
+  <!-- Password input -->
+  <div class="form-outline mb-4">
+    <input
+      type="password"
+      id="password"
+      class="form-control"
+      name="password"
+      [(ngModel)]="password"
+    />
+    <label class="form-label" for="form2Example2">Password</label>
+  </div>
+
+  <!-- Submit button -->
+  <input type="submit" value="Sign in" class="btn btn-primary btn-block mb-4" />
+</form>

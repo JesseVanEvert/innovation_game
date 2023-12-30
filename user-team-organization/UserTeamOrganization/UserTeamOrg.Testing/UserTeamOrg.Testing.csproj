@@ -1,0 +1,52 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <_FunctionsSkipCleanOutput>true</_FunctionsSkipCleanOutput>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\UserTeamOrg.DAL\UserTeamOrg.DAL.csproj" />
+    <ProjectReference Include="..\UserTeamOrg.Model\UserTeamOrg.Model.csproj" />
+    <ProjectReference Include="..\UserTeamOrg.Exceptions\UserTeamOrg.Exceptions.csproj" />
+    <ProjectReference Include="..\UserTeamOrg.BLL\UserTeamOrg.BLL.csproj" />
+    <ProjectReference Include="..\User.API\User.API.csproj" />
+    <ProjectReference Include="..\Team.API\Team.API.csproj" />
+    <ProjectReference Include="..\Organization.API\Organization.API.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Moq" />
+    <None Remove="Microsoft.NET.Test.Sdk" />
+    <None Remove="NUnit" />
+    <None Remove="NUnit3TestAdapter" />
+    <None Remove="Controller\" />
+    <None Remove="Repository\" />
+    <None Remove="Xunit.DependencyInjection" />
+    <None Remove="Microsoft.Extensions.Configuration.EnvironmentVariables" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Moq" Version="4.18.2" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.2" />
+    <PackageReference Include="NUnit" Version="3.13.3" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.3.0" />
+    <PackageReference Include="Xunit.DependencyInjection" Version="8.6.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="6.0.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Controller\" />
+    <Folder Include="Repository\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Service\EnvironmentVariables.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="Service\launchRequirements.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,145 @@
+<app-navigation></app-navigation>
+<div class="container">
+  <h1>Team beheer</h1>
+
+  <div class="accordion" id="accordion">
+    <div class="accordion-item">
+      <h2 class="accordion-header">
+        <button
+          class="accordion-button"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#collapseOne"
+          aria-expanded="true"
+          aria-controls="collapseOne"
+        >
+          Voeg team toe
+        </button>
+      </h2>
+      <div
+        id="collapseOne"
+        class="accordion-collapse collapse show"
+        data-bs-parent="#accordion"
+      >
+        <div class="accordion-body">
+          <form>
+            <div class="form-group">
+              <label for="category">Organization: </label>
+              <select (change)="updateOrganizationID($event)" class="form-control">
+                  <option>Choose organization</option>
+                  <option *ngFor="let organization of organizations" [value]="organization.organizationID">{{ organization.name }}</option>
+              </select>
+           </div>
+           
+            <label>Team naam</label>
+            <input type="text" class="form-control" [(ngModel)]="teamName" name="name"/>
+
+            <input type="submit" value="Voeg toe" class="btn btn-primary" (click)="createTeam()"/>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <h2 class="accordion-header">
+        <button
+          class="accordion-button collapsed"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#collapseThree"
+          aria-expanded="false"
+          aria-controls="collapseThree"
+        >
+          Voeg nieuw teamlid toe aan team
+        </button>
+      </h2>
+      <div
+        id="collapseThree"
+        class="accordion-collapse collapse"
+        data-bs-parent="#accordion"
+      >
+        <div class="accordion-body">
+          <form>
+            <div class="form-group">
+              <label for="category">Organization: </label>
+              <select (change)="updateOrganizationID($event)" class="form-control">
+                  <option>Kies organisatie</option>
+                  <option *ngFor="let organization of organizations" [value]="organization.organizationID">{{ organization.name }}</option>
+              </select>
+           </div>
+           
+            <div class="form-group">
+              <label for="category">Team: </label>
+              <select [(ngModel)]="teamID" class="form-control" name="teamID">
+                  <option>Kies team</option>
+                  <option *ngFor="let team of teams" [value]="team.teamID">{{ team.name }}</option>
+              </select>
+           </div>
+
+            <label>Voornaam</label>
+            <input type="text" class="form-control" [(ngModel)]="firstname" name="firstname"/>
+
+            <label>Achternaam</label>
+            <input type="text" class="form-control" [(ngModel)]="lastname" name="lastname"/>
+
+            <label>Email</label>
+            <input type="email" class="form-control" [(ngModel)]="email" name="email"/>
+
+            <label>Password</label>
+            <input type="password" class="form-control" [(ngModel)]="password" name="password"/>
+
+            <input type="submit" value="Voeg toe" class="btn btn-primary" (click)="createUser()" />
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <h2 class="accordion-header">
+        <button
+          class="accordion-button collapsed"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#collapseFour"
+          aria-expanded="false"
+          aria-controls="collapseFour"
+        >
+          Verwijder teamlid
+        </button>
+      </h2>
+      <div
+        id="collapseFour"
+        class="accordion-collapse collapse"
+        data-bs-parent="#accordion"
+      >
+        <div class="accordion-body">
+          <div class="form-group">
+            <label for="category">Organisatie: </label>
+            <select (change)="updateOrganizationID($event)" class="form-control" name="organizationId" [(ngModel)]="organizationID">
+                <option>Kies organisatie</option>
+                <option *ngFor="let organization of organizations" [value]="organization.organizationID">{{ organization.name }}</option>
+            </select>
+         </div>
+         
+          <div class="form-group">
+            <label for="category">Team: </label>
+            <select [(ngModel)]="teamID" (change)="getUsers()" class="form-control" name="teamID">
+                <option>Kies team</option>
+                <option *ngFor="let team of teams" [value]="team.teamID">{{ team.name }}</option>
+            </select>
+         </div>
+        
+         <div class="form-group">
+            <label for="category">Lid: </label>
+            <select [(ngModel)]="userId" class="form-control" name="userId">
+                <option>Kies lid</option>
+                <option *ngFor="let user of users" [value]="user.userId">{{ user.email }}</option>
+            </select>
+          </div>
+
+          <input type="submit" value="Verwijder" class="btn btn-primary" (click)="deleteUserFromTeam()" />
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

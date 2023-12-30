@@ -1,0 +1,126 @@
+# .NET Core Function App to Windows on Azure
+# Build a .NET Core function app and deploy it to Azure as a Windows function App.
+# Add steps that analyze code, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/languages/dotnet-core
+
+trigger:
+- main
+
+variables:
+  # Azure Resource Manager connection created during pipeline creation
+  azureSubscription: 'cbbe3a58-d05c-4319-b192-84c5cb97c872'
+
+  # Function app name
+  functionAppNameCard: 'ISGCardAPI'
+  functionAppNameDeck: 'ISGDeckAPI'
+
+  # Agent VM image name
+  vmImageName: 'windows-2019'
+
+  # Working Directory
+  workingDirectoryCard: '$(System.DefaultWorkingDirectory)/CardDeck/Card.API'
+  workingDirectoryDeck: '$(System.DefaultWorkingDirectory)/CardDeck/Deck.API'
+
+stages:
+- stage: Build
+  displayName: Build stage
+
+  jobs:
+  - job: Build
+    displayName: Build
+    pool:
+      vmImage: $(vmImageName)
+
+    steps:
+    - task: UseDotNet@2
+      displayName: 'Use .NET 6 Core sdk'
+      inputs:
+        packageType: 'sdk'
+        version: '6.0.x'
+        includePreviewVersions: true
+
+    - task: DotNetCoreCLI@2
+      displayName: Build Card
+      inputs:
+        command: 'build'
+        projects: |
+          $(workingDirectoryCard)/*.csproj
+        arguments: --output $(System.DefaultWorkingDirectory)/Card/publish_output --configuration Release
+
+    - task: DotNetCoreCLI@2
+      displayName: Build Deck
+      inputs:
+        command: 'build'
+        projects: |
+          $(workingDirectoryDeck)/*.csproj
+        arguments: --output $(System.DefaultWorkingDirectory)/Deck/publish_output --configuration Release
+
+    - task: ArchiveFiles@2
+      displayName: 'Archive Card files'
+      inputs:
+        rootFolderOrFile: '$(System.DefaultWorkingDirectory)/Card/publish_output'
+        includeRootFolder: false
+        archiveType: zip
+        archiveFile: $(Build.ArtifactStagingDirectory)/Card/$(Build.BuildId).zip
+        replaceExistingArchive: true
+    
+    - task: ArchiveFiles@2
+      displayName: 'Archive Deck files'
+      inputs:
+        rootFolderOrFile: '$(System.DefaultWorkingDirectory)/Deck/publish_output'
+        includeRootFolder: false
+        archiveType: zip
+        archiveFile: $(Build.ArtifactStagingDirectory)/Deck/$(Build.BuildId).zip
+        replaceExistingArchive: true
+
+    - publish: $(Build.ArtifactStagingDirectory)/Card/$(Build.BuildId).zip
+      artifact: card
+
+    - publish: $(Build.ArtifactStagingDirectory)/Deck/$(Build.BuildId).zip
+      artifact: deck
+
+- stage: Test
+  displayName: Run unit tests
+  jobs:
+    - job:
+      displayName: unit tests job
+      steps:
+        - task: DotNetCoreCLI@2
+          displayName: Run Visual studio tests
+          inputs:
+            command: test
+            projects: '**/*.Testing*/*.csproj'
+            arguments: '--configuration debug'
+            
+- stage: Deploy
+  displayName: Deploy stage
+  dependsOn: Test
+  condition: succeeded()
+
+  jobs:
+  - deployment: Deploy
+    displayName: Deploy
+    environment: 'development'
+    pool:
+      vmImage: $(vmImageName)
+
+    strategy:
+      runOnce:
+        deploy:
+
+          steps:
+          - task: AzureFunctionApp@1
+            displayName: 'Azure functions app deploy card'
+            inputs:
+              azureSubscription: '$(azureSubscription)'
+              appType: functionAppCard
+              appName: $(functionAppNameCard)
+              package: '$(Pipeline.Workspace)/Card/$(Build.BuildId).zip'
+
+          - task: AzureFunctionApp@1
+            displayName: 'Azure functions app deploy deck'
+            inputs:
+              azureSubscription: '$(azureSubscription)'
+              appType: functionAppDeck
+              appName: $(functionAppNameDeck)
+              package: '$(Pipeline.Workspace)/Deck/$(Build.BuildId).zip'

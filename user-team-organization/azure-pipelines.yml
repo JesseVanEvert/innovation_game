@@ -1,0 +1,158 @@
+# .NET Core Function App to Windows on Azure
+# Build a .NET Core function app and deploy it to Azure as a Windows function App.
+# Add steps that analyze code, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/languages/dotnet-core
+
+trigger:
+- main
+
+variables:
+  # Azure Resource Manager connection created during pipeline creation
+  azureSubscription: 'cbbe3a58-d05c-4319-b192-84c5cb97c872'
+
+  # Function app name
+  functionAppNameUser: 'ISGUserAPI'
+  functionAppNameTeam: 'ISGTeamAPI'
+  functionAppNameOrganization: 'ISGOrganizationAPI'
+
+  # Agent VM image name
+  vmImageName: 'windows-2019'
+
+  # Working Directory
+  workingDirectoryUser: '$(System.DefaultWorkingDirectory)/UserTeamOrganization/User.API'
+  workingDirectoryTeam: '$(System.DefaultWorkingDirectory)/UserTeamOrganization/Team.API'
+  workingDirectoryOrganization: '$(System.DefaultWorkingDirectory)/UserTeamOrganization/Organization.API'
+
+stages:
+- stage: Build
+  displayName: Build stage
+
+  jobs:
+  - job: Build
+    displayName: Build
+    pool:
+      vmImage: $(vmImageName)
+
+    steps:
+    - task: UseDotNet@2
+      displayName: 'Use .NET 6 Core sdk'
+      inputs:
+        packageType: 'sdk'
+        version: '6.0.x'
+        includePreviewVersions: true
+
+    - task: DotNetCoreCLI@2
+      displayName: Build User
+      inputs:
+        command: 'build'
+        projects: |
+          $(workingDirectoryUser)/*.csproj
+        arguments: --output $(System.DefaultWorkingDirectory)/User/publish_output --configuration Release
+
+    - task: DotNetCoreCLI@2
+      displayName: Build Team
+      inputs:
+        command: 'build'
+        projects: |
+          $(workingDirectoryTeam)/*.csproj
+        arguments: --output $(System.DefaultWorkingDirectory)/Team/publish_output --configuration Release
+
+    - task: DotNetCoreCLI@2
+      displayName: Build Organization
+      inputs:
+        command: 'build'
+        projects: |
+          $(workingDirectoryOrganization)/*.csproj
+        arguments: --output $(System.DefaultWorkingDirectory)/Organization/publish_output --configuration Release
+
+    - task: ArchiveFiles@2
+      displayName: 'Archive User files'
+      inputs:
+        rootFolderOrFile: '$(System.DefaultWorkingDirectory)/User/publish_output'
+        includeRootFolder: false
+        archiveType: zip
+        archiveFile: $(Build.ArtifactStagingDirectory)/User/$(Build.BuildId).zip
+        replaceExistingArchive: true
+    
+    - task: ArchiveFiles@2
+      displayName: 'Archive Team files'
+      inputs:
+        rootFolderOrFile: '$(System.DefaultWorkingDirectory)/Team/publish_output'
+        includeRootFolder: false
+        archiveType: zip
+        archiveFile: $(Build.ArtifactStagingDirectory)/Team/$(Build.BuildId).zip
+        replaceExistingArchive: true
+
+    - task: ArchiveFiles@2
+      displayName: 'Archive Organization files'
+      inputs:
+        rootFolderOrFile: '$(System.DefaultWorkingDirectory)/Organization/publish_output'
+        includeRootFolder: false
+        archiveType: zip
+        archiveFile: $(Build.ArtifactStagingDirectory)/Organization/$(Build.BuildId).zip
+        replaceExistingArchive: true
+
+
+    - publish: $(Build.ArtifactStagingDirectory)/User/$(Build.BuildId).zip
+      artifact: user
+
+    - publish: $(Build.ArtifactStagingDirectory)/Team/$(Build.BuildId).zip
+      artifact: team
+
+    - publish: $(Build.ArtifactStagingDirectory)/Organization/$(Build.BuildId).zip
+      artifact: organization
+
+- stage: Test
+  displayName: Run unit tests
+  jobs:
+    - job:
+      displayName: unit tests job
+      steps:
+        - task: DotNetCoreCLI@2
+          displayName: Run Visual studio tests
+          inputs:
+            command: test
+            projects: '**/*.Testing*/*.csproj'
+            arguments: '--configuration debug'
+
+
+- stage: Deploy
+  displayName: Deploy stage
+  dependsOn: Test
+  condition: succeeded()
+
+  jobs:
+  - deployment: Deploy
+    displayName: Deploy
+    environment: 'development'
+    pool:
+      vmImage: $(vmImageName)
+
+    strategy:
+      runOnce:
+        deploy:
+
+          steps:
+          - task: AzureFunctionApp@1
+            displayName: 'Azure functions app deploy user'
+            inputs:
+              azureSubscription: '$(azureSubscription)'
+              appType: functionAppUser
+              appName: $(functionAppNameUser)
+              package: '$(Pipeline.Workspace)/User/$(Build.BuildId).zip'
+
+          - task: AzureFunctionApp@1
+            displayName: 'Azure functions app deploy team'
+            inputs:
+              azureSubscription: '$(azureSubscription)'
+              appType: functionAppTeam
+              appName: $(functionAppNameTeam)
+              package: '$(Pipeline.Workspace)/Team/$(Build.BuildId).zip'
+
+          - task: AzureFunctionApp@1
+            displayName: 'Azure functions app deploy organization'
+            inputs:
+              azureSubscription: '$(azureSubscription)'
+              appType: functionAppOrganization
+              appName: $(functionAppNameOrganization)
+              package: '$(Pipeline.Workspace)/Organization/$(Build.BuildId).zip'
